@@ -1,6 +1,12 @@
-import altair as alt
+
+import numpy as np
 import pandas as pd
-import streamlit as st
+from sqlalchemy import create_engine, select, text, func
+
+engine = create_engine('postgresql://lkp:voeko@172.26.63.252:5432/postgres')
+
+# Replace the schema_name with your actual schema name
+schema_name = 'rsdb'
 
 # Show the page title and description.
 st.set_page_config(page_title="Movies dataset", page_icon="🎬")
