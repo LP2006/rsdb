@@ -1,25 +1,31 @@
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import create_engine, select, text, func
+import sqlalchemy 
+from sqlalchemy import create_engine, select, text, func,inspect
+import streamlit as st
+import os
+
+
+
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+database = os.getenv('DB_NAME')
+schema_name = os.getenv('schema_name')
 
 # Create the connection string
 connection_string = f'postgresql://{user}:{password}@{host}:{port}/{database}'
-
 # Create the engine
 engine = create_engine(connection_string)
 
-# Define connection parameters
-user = 'lkp'
-password = 'voeko'
-host = '172.26.63.252'
-port = '5432'
-database = 'postgres'
-schema_name = 'rsdb'
 
 # Show the page title and description.
 st.set_page_config(page_title="Remote Sensing DB", page_icon="📊")
-st.title("📊 rsdb")
+
+st.title("📊 Remote Sensing Database Explorer")
+
 st.write(
     """
     This app visualizes data from the central database maintained through PostgreSQL server mounted on [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
@@ -48,12 +54,16 @@ def get_table_data(table_name, limit=10, offset=0, search=''):
         data = pd.read_sql(query, connection)
     return data
 
-# Streamlit app
-st.title("PostgreSQL Schema Explorer")
-
 # Get list of tables
 tables = get_tables()
 
+st.write(
+    """
+    This app visualizes data from the central database maintained through PostgreSQL server mounted on [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
+    It shows the data stored in a normalized form with tables connected through Primary and Foreign keys. Just 
+    click on the widgets below to explore!
+    """
+)
 # Table selection
 table_name = st.selectbox("Select a table", tables)
 
