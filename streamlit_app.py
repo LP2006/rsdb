@@ -59,11 +59,17 @@ tables = get_tables()
 
 st.write(
     """
-    This app visualizes data from the central database maintained through PostgreSQL server mounted on [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
-    It shows the data stored in a normalized form with tables connected through Primary and Foreign keys. Just 
-    click on the widgets below to explore!
+    The db is set up through snowflake schema and the main facts are stored in VehiclePassage table.
+    Each Campaign is given a unique ID and all information is stored in the Campaign table.
+    The ids joining the VP and Campaign are SessionIDs which are unique based on the combination of Site, Starttime, Stoptime & InstrumentID.
+    Measurement data for any particular campaign can be accessed through these SessionIDs.
     """
 )
+
+st.write(
+    """ Other sub-tables include VehicleCategoryConversion,VehicleMakeCode, FuelType, EmissionStandard, Instrument and Site which contains IDs acting as foreign keys for respective unique values"""
+)
+
 # Table selection
 table_name = st.selectbox("Select a table", tables)
 
@@ -82,16 +88,7 @@ if table_name:
     # Display control options
     st.write(f"Showing rows with offset {offset}")
 
-# Load the data from a CSV. We're caching this so it doesn't reload every time the app
-# reruns (e.g. if the user interacts with the widgets).
-@st.cache_data
-def load_data():
-    df = pd.read_csv("data/movies_genres_summary.csv")
-    return df
-
-
-df = load_data()
-
+"""
 # Show a multiselect widget with the genres using `st.multiselect`.
 genres = st.multiselect(
     "Genres",
@@ -132,3 +129,4 @@ chart = (
     .properties(height=320)
 )
 st.altair_chart(chart, use_container_width=True)
+"""
