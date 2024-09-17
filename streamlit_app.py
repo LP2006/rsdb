@@ -2,14 +2,14 @@
 import numpy as np
 import pandas as pd
 import sqlalchemy 
-from sqlalchemy import create_engine, select, text, func,inspect
+from sqlalchemy import create_engine, select, text, func, inspect
 import streamlit as st
 import os
 from dotenv import load_dotenv
+import psycopg2  # Added import
 
 # Load environment variables from .env file
 load_dotenv()
-
 
 user = os.getenv('DB_USER')
 password = os.getenv('DB_PASSWORD')
@@ -22,23 +22,39 @@ schema_name = os.getenv('schema_name')
 connection_string = f'postgresql://{user}:{password}@{host}:{port}/{database}'
 print(f"user: {user}, password: {password}, host: {host}, port: {port}, database: {database}")
 
-# Create the engine
+# Create the engine (uncommented)
 engine = create_engine(connection_string)
 
+# Check the connection manually using psycopg2
+try:
+    connection = psycopg2.connect(
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        database=database,
+        connect_timeout=10  # Set a reasonable timeout
+    )
+    print("Connection successful")
+except Exception as e:
+    print(f"Error: {e}")
+finally:
+    if 'connection' in locals() and connection:
+        connection.close()
 
-# Show the page title and description.
+# Streamlit app
 st.set_page_config(page_title="Remote Sensing DB", page_icon="📊")
 
 st.title("📊 Remote Sensing Database Explorer")
 
 st.write(
     """
-    This app visualizes data from the central database maintained through PostgreSQL server mounted on [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
+    This app visualizes data from the central database maintained through PostgreSQL server mounted on 
+    [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
     It shows the data stored in a normalized form with tables connected through Primary and Foreign keys. Just 
     click on the widgets below to explore!
     """
 )
-
 
 # Function to get tables in the schema
 @st.cache_data
@@ -66,13 +82,14 @@ st.write(
     """
     The db is set up through snowflake schema and the main facts are stored in VehiclePassage table.
     Each Campaign is given a unique ID and all information is stored in the Campaign table.
-    The ids joining the VP and Campaign are SessionIDs which are unique based on the combination of Site, Starttime, Stoptime & InstrumentID.
-    Measurement data for any particular campaign can be accessed through these SessionIDs.
+    The ids joining the VP and Campaign are SessionIDs which are unique based on the combination of Site, Starttime, 
+    Stoptime & InstrumentID. Measurement data for any particular campaign can be accessed through these SessionIDs.
     """
 )
 
 st.write(
-    """ Other sub-tables include VehicleCategoryConversion,VehicleMakeCode, FuelType, EmissionStandard, Instrument and Site which contains IDs acting as foreign keys for respective unique values"""
+    """ Other sub-tables include VehicleCategoryConversion,VehicleMakeCode, FuelType, EmissionStandard, Instrument 
+    and Site which contains IDs acting as foreign keys for respective unique values"""
 )
 
 # Table selection
