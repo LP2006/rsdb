@@ -4,7 +4,8 @@ pandas
 sqlalchemy
 psycopg2-binary
 python-dotenv
-pg800
+pg8000
+
 
 
 
