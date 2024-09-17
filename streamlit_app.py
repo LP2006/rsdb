@@ -5,7 +5,10 @@ import sqlalchemy
 from sqlalchemy import create_engine, select, text, func,inspect
 import streamlit as st
 import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 
 
 user = os.getenv('DB_USER')
@@ -17,6 +20,8 @@ schema_name = os.getenv('schema_name')
 
 # Create the connection string
 connection_string = f'postgresql://{user}:{password}@{host}:{port}/{database}'
+print(f"user: {user}, password: {password}, host: {host}, port: {port}, database: {database}")
+
 # Create the engine
 engine = create_engine(connection_string)
 
