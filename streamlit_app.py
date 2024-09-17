@@ -1,41 +1,39 @@
 
-import pg8000
+import pandas as pd
+from sqlalchemy import create_engine, inspect
 import os
 from dotenv import load_dotenv
-import pandas as pd
 
 # Load environment variables
 load_dotenv()
 
-# Get credentials from environment variables
-user = os.getenv('DB_USER')
-password = os.getenv('DB_PASSWORD')
-host = os.getenv('DB_HOST')
-port = os.getenv('DB_PORT')
-database = os.getenv('DB_NAME')
+# Define your schema name
+schema_name = 'rsdb'
 
-try:
-    # Connect to PostgreSQL using pg8000
-    connection = pg8000.connect(
-        user=user,
-        password=password,
-        host=host,
-        port=int(port),
-        database=database
-    )
+# Create SQLAlchemy engine
+engine = create_engine('postgresql://lkp:voeko@172.26.63.252:5432/postgres')
 
-    print("Connection successful")
+# Function to get tables in the schema
+def get_tables():
+    inspector = inspect(engine)
+    tables = inspector.get_table_names(schema=schema_name)
+    return tables
 
-    # Create a cursor and fetch data
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM Campaign LIMIT 10")
-    rows = cursor.fetchall()
-    
-    df = pd.DataFrame(rows, columns=[desc[0] for desc in cursor.description])
+# Function to get table data
+def get_table_data(table_name, limit=10, offset=0, search=''):
+    query = f'''
+        SELECT * FROM {schema_name}.{table_name}
+        WHERE column_name ILIKE '%{search}%'
+        LIMIT {limit} OFFSET {offset}
+    '''
+    with engine.connect() as connection:
+        data = pd.read_sql(query, connection)
+    return data
+
+# Example usage
+tables = get_tables()
+print("Tables in schema:", tables)
+
+if tables:
+    df = get_table_data(tables[0], limit=5)
     print(df)
-
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    connection.close()
-    print("Connection closed")
