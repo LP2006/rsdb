@@ -1,12 +1,11 @@
 
 import numpy as np
 import pandas as pd
-import sqlalchemy 
-from sqlalchemy import create_engine, select, text, func, inspect
+from sqlalchemy import create_engine, exc, event, select, inspect
 import streamlit as st
 import os
 from dotenv import load_dotenv
-import psycopg2  # Added import
+import psycopg2
 
 # Load environment variables from .env file
 load_dotenv()
@@ -20,36 +19,37 @@ schema_name = os.getenv('schema_name')
 
 # Create the connection string
 connection_string = f'postgresql://{user}:{password}@{host}:{port}/{database}'
-print(f"user: {user}, password: {password}, host: {host}, port: {port}, database: {database}")
 
-# Create the engine (uncommented)
+# Create the SQLAlchemy engine
 engine = create_engine(connection_string)
 
-# Check the connection manually using psycopg2
-try:
-    connection = psycopg2.connect(
-        host=host,
-        port=port,
-        user=user,
-        password=password,
-        database=database,
-        connect_timeout=10  # Set a reasonable timeout
-    )
-    print("Connection successful")
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    if 'connection' in locals() and connection:
-        connection.close()
+# Event listener to ping the connection
+@event.listens_for(engine, "engine_connect")
+def ping_connection(connection, branch):
+    if branch:
+        # Do not ping "branched" connections (SQLAlchemy 2.x compatibility)
+        return
 
-# Streamlit app
+    try:
+        # Test the connection with a simple 'SELECT 1'
+        connection.scalar(select(1))
+    except exc.DBAPIError as err:
+        # Handle invalidated connections
+        if err.connection_invalidated:
+            # Retry the connection
+            connection.scalar(select(1))
+        else:
+            # Raise any other DB errors
+            raise
+
+# Streamlit app code
 st.set_page_config(page_title="Remote Sensing DB", page_icon="📊")
 
 st.title("📊 Remote Sensing Database Explorer")
 
 st.write(
     """
-    This app visualizes data from the central database maintained through PostgreSQL server mounted on 
+    This app visualizes data from the central database maintained through a PostgreSQL server mounted on 
     [TU Dresden's secure VM](https://tu-dresden.de/zih/dienste/service-katalog/zusammenarbeiten-und-forschen/server_hosting).
     It shows the data stored in a normalized form with tables connected through Primary and Foreign keys. Just 
     click on the widgets below to explore!
@@ -109,6 +109,7 @@ if table_name:
 
     # Display control options
     st.write(f"Showing rows with offset {offset}")
+
 
 """
 # Show a multiselect widget with the genres using `st.multiselect`.
