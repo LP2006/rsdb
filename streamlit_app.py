@@ -28,7 +28,7 @@ try:
 
     # Create a cursor and fetch data
     cursor = connection.cursor()
-    cursor.execute("SELECT * FROM your_table LIMIT 10")
+    cursor.execute("SELECT * FROM Campaign LIMIT 10")
     rows = cursor.fetchall()
     
     df = pd.DataFrame(rows, columns=[desc[0] for desc in cursor.description])
