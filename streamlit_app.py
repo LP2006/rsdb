@@ -11,7 +11,8 @@ load_dotenv()
 schema_name = 'rsdb'
 
 # Create SQLAlchemy engine
-engine = create_engine('postgresql://lkp:voeko@172.26.63.252:5432/postgres')
+#engine = create_engine('postgresql://lkp:voeko@172.26.63.252:5432/postgres')
+engine = create_engine("postgresql://lkp:voeko@172.26.63.252:5432/postgres", pool_pre_ping=True)
 
 # Function to get tables in the schema
 def get_tables():
