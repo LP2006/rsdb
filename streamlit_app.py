@@ -16,7 +16,7 @@ def log_exception(e, context=""):
 def get_database_connection():
     try:
         # Example connection string with SSL and logging
-        engine = create_engine("postgresql://user:password@172.26.63.252:5432/postgres?sslmode=require")
+        engine = create_engine("postgresql://lkp:voeko@172.26.63.252:5432/postgres?sslmode=require")
         logger.info("Database connection established.")
         return engine
     except Exception as e:
@@ -40,7 +40,7 @@ def main():
     engine = get_database_connection()
     
     if engine:
-        schema_name = "your_schema_name"  # Replace with your actual schema name
+        schema_name = "rsdb"  #  actual schema name
         tables = inspect_tables(engine, schema_name)
         
         if tables:
