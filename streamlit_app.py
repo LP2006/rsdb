@@ -1,40 +1,31 @@
+import streamlit as st
 import pyodbc
 import pandas as pd
-import streamlit as st
 
-# Define the ODBC connection using the System-DSN
+# Function to connect to the PostgreSQL DB via ODBC
 def connect_to_db():
     try:
-        # Replace 'your_dsn' with the name of your System-DSN
+        # Here, replace 'PostgreSQL' with the name of your DSN (e.g. 'PostgreSQL' from the image)
         connection = pyodbc.connect('DSN=PostgreSQL;UID=lkp;PWD=voeko')
-        st.success("Database connection established.")
+        st.success("Database connection established successfully!")
         return connection
     except Exception as e:
         st.error(f"Error connecting to the database: {e}")
         return None
 
-# Fetch data from a table
-def fetch_data(connection, table_name):
-    try:
-        query = f"SELECT * FROM {table_name} LIMIT 10"
-        df = pd.read_sql(query, connection)
-        return df
-    except Exception as e:
-        st.error(f"Error fetching data: {e}")
-        return None
+# Function to fetch data from a specific table
+def fetch_table_data(connection, table_name, limit=10):
+    query = f"SELECT * FROM {table_name} LIMIT {limit}"
+    return pd.read_sql(query, connection)
 
 # Streamlit app layout
 st.title("ODBC PostgreSQL Connection")
 
 # Connect to the database
-connection = connect_to_db()
+conn = connect_to_db()
 
-if connection:
-    # List the tables (you can use another query to list tables if needed)
-    table_name = st.text_input("Enter the table name", "your_table")
-
-    # Fetch and display the data
-    if table_name:
-        data = fetch_data(connection, table_name)
-        if data is not None:
-            st.write(data)
+if conn:
+    table_name = st.text_input("Enter the table name to fetch data from:", "your_table_name")
+    if st.button("Fetch Data"):
+        df = fetch_table_data(conn, table_name)
+        st.write(df)
