@@ -6,7 +6,7 @@ import streamlit as st
 def connect_to_db():
     try:
         # Replace 'your_dsn' with the name of your System-DSN
-        connection = pyodbc.connect('DSN=your_dsn;UID=your_username;PWD=your_password')
+        connection = pyodbc.connect('DSN=PostgreSQL;UID=lkp;PWD=voeko')
         st.success("Database connection established.")
         return connection
     except Exception as e:
